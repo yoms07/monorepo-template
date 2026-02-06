@@ -1,13 +1,25 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { BaseGenerator } from './base.generator.js';
-import { ensureDir, writeFile } from '../utils/file-ops.js';
+import { ensureDir, writeFile, readFile } from '../utils/file-ops.js';
 import type { ProjectConfig } from '../types/index.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const getPackageRoot = () => {
+  const dirname = __dirname;
+  return path.resolve(dirname, '..');
+};
 
 export class MonorepoGenerator extends BaseGenerator {
   async generate(config: ProjectConfig): Promise<void> {
     await ensureDir(this.options.projectDir);
     await this.createRootFiles(config);
     await this.createPackagesDirectory();
+
+    if (config.includeDocker) {
+      await this.createDockerCompose(config);
+    }
   }
 
   private async createRootFiles(config: ProjectConfig): Promise<void> {
@@ -154,5 +166,44 @@ ${config.includeBackend ? '│   ├── api/         # Backend API\n' : ''}${
 
   private async createPackagesDirectory(): Promise<void> {
     await ensureDir(path.join(this.options.projectDir, 'packages'));
+  }
+
+  private async createDockerCompose(config: ProjectConfig): Promise<void> {
+    const packageRoot = getPackageRoot();
+    const templatePath = path.join(packageRoot, 'templates', 'docker-compose.yml');
+    const template = await readFile(templatePath);
+
+    // Determine which services to include
+    const hasPostgres = config.backend?.database === 'postgres';
+    const hasMongodb = config.backend?.database === 'mongodb';
+    const hasRedis = config.backend?.includeRedis || false;
+    const hasSmtp = config.backend?.includeSmtp || false;
+
+    // Process conditional lines
+    let content = template
+      .split('\n')
+      .filter((line) => {
+        if (line.includes('__IF_POSTGRES__')) return hasPostgres;
+        if (line.includes('__IF_MONGODB__')) return hasMongodb;
+        if (line.includes('__IF_REDIS__')) return hasRedis;
+        if (line.includes('__IF_SMTP__')) return hasSmtp;
+        return true;
+      })
+      .map((line) => {
+        return line
+          .replace(/__IF_POSTGRES__/g, '')
+          .replace(/__IF_MONGODB__/g, '')
+          .replace(/__IF_REDIS__/g, '')
+          .replace(/__IF_SMTP__/g, '');
+      })
+      .join('\n');
+
+    // Replace tokens
+    const tokens = this.getTokens();
+    for (const [token, value] of Object.entries(tokens)) {
+      content = content.replace(new RegExp(token, 'g'), value);
+    }
+
+    await writeFile(path.join(this.options.projectDir, 'docker-compose.yml'), content);
   }
 }

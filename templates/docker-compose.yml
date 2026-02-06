@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+__IF_POSTGRES__  postgres:
+__IF_POSTGRES__    image: postgres:16-alpine
+__IF_POSTGRES__    container_name: __PROJECT_NAME__-postgres
+__IF_POSTGRES__    environment:
+__IF_POSTGRES__      POSTGRES_USER: postgres
+__IF_POSTGRES__      POSTGRES_PASSWORD: postgres
+__IF_POSTGRES__      POSTGRES_DB: __PROJECT_NAME__
+__IF_POSTGRES__    ports:
+__IF_POSTGRES__      - '5432:5432'
+__IF_POSTGRES__    volumes:
+__IF_POSTGRES__      - postgres_data:/var/lib/postgresql/data
+__IF_POSTGRES__    healthcheck:
+__IF_POSTGRES__      test: ['CMD-SHELL', 'pg_isready -U postgres']
+__IF_POSTGRES__      interval: 10s
+__IF_POSTGRES__      timeout: 5s
+__IF_POSTGRES__      retries: 5
+__IF_POSTGRES__
+__IF_MONGODB__  mongodb:
+__IF_MONGODB__    image: mongo:7-jammy
+__IF_MONGODB__    container_name: __PROJECT_NAME__-mongodb
+__IF_MONGODB__    environment:
+__IF_MONGODB__      MONGO_INITDB_ROOT_USERNAME: root
+__IF_MONGODB__      MONGO_INITDB_ROOT_PASSWORD: password
+__IF_MONGODB__      MONGO_INITDB_DATABASE: __PROJECT_NAME__
+__IF_MONGODB__    ports:
+__IF_MONGODB__      - '27017:27017'
+__IF_MONGODB__    volumes:
+__IF_MONGODB__      - mongodb_data:/data/db
+__IF_MONGODB__    healthcheck:
+__IF_MONGODB__      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/__PROJECT_NAME__ --quiet
+__IF_MONGODB__      interval: 10s
+__IF_MONGODB__      timeout: 5s
+__IF_MONGODB__      retries: 5
+__IF_MONGODB__
+__IF_REDIS__  redis:
+__IF_REDIS__    image: redis:7-alpine
+__IF_REDIS__    container_name: __PROJECT_NAME__-redis
+__IF_REDIS__    ports:
+__IF_REDIS__      - '6379:6379'
+__IF_REDIS__    volumes:
+__IF_REDIS__      - redis_data:/data
+__IF_REDIS__    healthcheck:
+__IF_REDIS__      test: ['CMD', 'redis-cli', 'ping']
+__IF_REDIS__      interval: 10s
+__IF_REDIS__      timeout: 5s
+__IF_REDIS__      retries: 5
+__IF_REDIS__
+__IF_SMTP__  mailhog:
+__IF_SMTP__    image: mailhog/mailhog:latest
+__IF_SMTP__    container_name: __PROJECT_NAME__-mailhog
+__IF_SMTP__    ports:
+__IF_SMTP__      - '1025:1025'  # SMTP
+__IF_SMTP__      - '8025:8025'  # Web UI
+__IF_SMTP__    healthcheck:
+__IF_SMTP__      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:8025']
+__IF_SMTP__      interval: 10s
+__IF_SMTP__      timeout: 5s
+__IF_SMTP__      retries: 5
+
+volumes:
+__IF_POSTGRES__  postgres_data:
+__IF_MONGODB__  mongodb_data:
+__IF_REDIS__  redis_data:
+
+networks:
+  default:
+    name: __PROJECT_NAME__-network

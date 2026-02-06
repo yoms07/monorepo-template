@@ -5,6 +5,7 @@ export interface ProjectConfig {
   packageManager: PackageManager;
   includeBackend: boolean;
   includeFrontend: boolean;
+  includeDocker?: boolean;
   backend?: BackendConfig;
   frontend?: FrontendConfig;
 }
@@ -16,6 +17,7 @@ export interface BackendConfig {
   includeRedis: boolean;
   includeSmtp: boolean;
   includeSwagger: boolean;
+  includeAuth: boolean;
 }
 
 export interface FrontendConfig {

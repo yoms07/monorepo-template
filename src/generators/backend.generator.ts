@@ -74,6 +74,12 @@ export class BackendGenerator extends BaseGenerator {
         const swaggerFeaturePath = path.join(featuresPath, 'swagger');
         await mergeFeature(backendDir, swaggerFeaturePath, tokens);
       }
+
+      // Add JWT Auth feature
+      if (this.config.includeAuth) {
+        const authFeaturePath = path.join(featuresPath, 'jwt-auth');
+        await mergeFeature(backendDir, authFeaturePath, tokens);
+      }
     }
   }
 }

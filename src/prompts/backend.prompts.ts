@@ -66,6 +66,17 @@ export async function promptBackendConfig(): Promise<BackendConfig> {
     includeSwagger = swagger;
   }
 
+  let includeAuth = false;
+  if (backendType === 'web') {
+    const { auth } = await enquirer.prompt<{ auth: boolean }>({
+      type: 'confirm',
+      name: 'auth',
+      message: 'Include JWT authentication?',
+      initial: false,
+    });
+    includeAuth = auth;
+  }
+
   return {
     type: backendType,
     framework,
@@ -73,5 +84,6 @@ export async function promptBackendConfig(): Promise<BackendConfig> {
     includeRedis,
     includeSmtp,
     includeSwagger,
+    includeAuth,
   };
 }
