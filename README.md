@@ -1,6 +1,6 @@
 # create-monorepo
 
-[![npm version](https://badge.fury.io/js/create-monorepo.svg)](https://www.npmjs.com/package/create-monorepo)
+[![npm version](https://badge.fury.io/js/@yoms%2Fcreate-monorepo.svg)](https://www.npmjs.com/package/@yoms/create-monorepo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A CLI tool to scaffold monorepo projects from templates with type sharing between packages.
@@ -19,23 +19,23 @@ You don't need to install anything! Just run:
 
 ```bash
 # Using npx (recommended)
-npx create-monorepo my-project
+npx @yoms/create-monorepo my-project
 
 # Using pnpm
-pnpm create monorepo my-project
+pnpm create @yoms/monorepo my-project
 
 # Using yarn
-yarn create monorepo my-project
+yarn create @yoms/monorepo my-project
 
-# Using bun
-bunx create-monorepo my-project
+# Using npm
+npm create @yoms/monorepo my-project
 ```
 
 ## Quick Start
 
 ```bash
 # Create a new project
-npx create-monorepo my-project
+npx @yoms/create-monorepo my-project
 
 # Navigate to project
 cd my-project
