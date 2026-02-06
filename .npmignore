@@ -1,0 +1,40 @@
+# Source files
+src/
+scripts/
+*.ts
+!*.d.ts
+tsconfig.json
+
+# Development files
+.changeset/
+.github/
+node_modules/
+*.log
+*.tgz
+
+# Test files
+**/__tests__/
+**/*.test.ts
+**/*.spec.ts
+vitest.config.ts
+coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Documentation (keep in npm)
+!README.md
+!LICENSE
+!CHANGELOG.md
+
+# Config files
+.eslintrc*
+.prettierrc*
+.editorconfig
+CONTRIBUTING.md
+DEV_GUIDE.md
+CLAUDE.md
