@@ -1,5 +1,5 @@
 {
-  "name": "create-monorepo",
+  "name": "@yoms/create-monorepo",
   "version": "1.0.2",
   "description": "CLI tool to scaffold monorepo projects from templates",
   "type": "module",
