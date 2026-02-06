@@ -7,6 +7,12 @@ import type { BackendGeneratorOptions } from '../types/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Get package root directory (works both in dev and when published)
+const getPackageRoot = () => {
+  const dirname = __dirname;
+  return path.resolve(dirname, '..');
+};
+
 export class BackendGenerator extends BaseGenerator {
   private config: BackendGeneratorOptions['config'];
 
@@ -26,14 +32,16 @@ export class BackendGenerator extends BaseGenerator {
       __HAS_SMTP__: String(this.config.includeSmtp),
     });
 
+    const packageRoot = getPackageRoot();
+
     // Determine template path based on backend type
     let templatePath: string;
     if (this.config.type === 'web') {
-      templatePath = path.join(__dirname, '../../templates', `backend-${this.config.framework}`, 'base');
+      templatePath = path.join(packageRoot, 'templates', `backend-${this.config.framework}`, 'base');
     } else if (this.config.type === 'worker') {
-      templatePath = path.join(__dirname, '../../templates', 'backend-worker', 'base');
+      templatePath = path.join(packageRoot, 'templates', 'backend-worker', 'base');
     } else {
-      templatePath = path.join(__dirname, '../../templates', 'backend-cli', 'base');
+      templatePath = path.join(packageRoot, 'templates', 'backend-cli', 'base');
     }
 
     // Copy base template
@@ -41,7 +49,7 @@ export class BackendGenerator extends BaseGenerator {
 
     // Merge features for web backends
     if (this.config.type === 'web') {
-      const featuresPath = path.join(__dirname, '../../templates', `backend-${this.config.framework}`, 'features');
+      const featuresPath = path.join(packageRoot, 'templates', `backend-${this.config.framework}`, 'features');
 
       // Add database feature
       if (this.config.database) {

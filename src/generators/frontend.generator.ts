@@ -6,6 +6,12 @@ import type { FrontendGeneratorOptions } from '../types/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Get package root directory (works both in dev and when published)
+const getPackageRoot = () => {
+  const dirname = __dirname;
+  return path.resolve(dirname, '..');
+};
+
 export class FrontendGenerator extends BaseGenerator {
   private config: FrontendGeneratorOptions['config'];
 
@@ -22,7 +28,8 @@ export class FrontendGenerator extends BaseGenerator {
       __API_URL__: this.config.apiUrl,
     });
 
-    const templatePath = path.join(__dirname, '../../templates', 'frontend-nextjs', 'base');
+    const packageRoot = getPackageRoot();
+    const templatePath = path.join(packageRoot, 'templates', 'frontend-nextjs', 'base');
 
     // Copy base template
     await copyDirRecursive(templatePath, frontendDir, tokens);
