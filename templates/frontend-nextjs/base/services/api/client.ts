@@ -12,6 +12,7 @@ export class ApiClient {
     try {
       const response = await fetch(url, {
         ...options,
+        credentials: 'include', // send session cookies cross-origin (required for better-auth)
         headers: {
           'Content-Type': 'application/json',
           ...options?.headers,

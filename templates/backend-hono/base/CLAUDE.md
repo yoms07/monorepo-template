@@ -1,6 +1,6 @@
-# AGENT.md - Backend API
+# CLAUDE.md — Backend API (`__PACKAGE_SCOPE__/api`)
 
-This file provides guidance to AI agents (Claude, Cursor, etc.) when working with this backend API.
+This file provides guidance to Claude Code when working in this package.
 
 ## Project Overview
 
@@ -315,10 +315,49 @@ logger.error('Database error', { error, query });
 - Use `prisma.$transaction()` for multiple related operations
 - Profile with `pnpm test:coverage` to find slow tests
 
+## Authentication (better-auth)
+
+If auth is enabled, the project uses [better-auth](https://better-auth.com) with cookie-based sessions.
+
+### How it works
+
+- All auth routes are mounted at `/api/auth/**` — handled automatically by better-auth
+- Sessions are stored in the database (Prisma adapter)
+- Cookies are HTTP-only — no manual token management
+
+### Protecting routes
+
+```typescript
+import { requireAuth, optionalAuth } from '../middleware/auth.middleware.js';
+
+// Require a valid session
+app.get('/profile', requireAuth, (c) => {
+  const session = c.get('session'); // { user: User, session: Session }
+  return success(c, session.user);
+});
+
+// Attach session if present, but don't block
+app.get('/feed', optionalAuth, (c) => {
+  const session = c.get('session'); // null if not logged in
+  ...
+});
+```
+
+### Prisma schema
+
+The schema includes `user`, `session`, `account`, and `verification` tables managed by better-auth. Do not modify them manually — run `npx better-auth generate` if you change `src/lib/auth.ts`.
+
+### Auth environment variables
+
+```
+BETTER_AUTH_SECRET=...   # min 32 chars
+BETTER_AUTH_URL=...      # your API URL, e.g. http://localhost:3001
+```
+
 ## Security Checklist
 
 - [ ] All inputs are validated with Zod
-- [ ] Rate limiting is applied to auth endpoints
+- [ ] Rate limiting is applied to sensitive endpoints
 - [ ] Sensitive data is not logged
 - [ ] Database queries use parameterized queries (Prisma does this)
 - [ ] CORS is configured correctly

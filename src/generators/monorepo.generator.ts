@@ -94,8 +94,77 @@ tmp/
 `;
     await writeFile(path.join(this.options.projectDir, '.gitignore'), gitignoreContent);
 
-    // Create README.md
+    // Create CLAUDE.md (guidance for Claude Code)
     const tokens = this.getTokens();
+    const pm = this.options.packageManager;
+    const hasBackend = config.includeBackend;
+    const hasFrontend = config.includeFrontend;
+    const hasShared = hasBackend && hasFrontend;
+    const db = config.backend?.database;
+    const hasAuth = config.backend?.includeAuth;
+    const hasRedis = config.backend?.includeRedis;
+
+    const claudeMdContent = `# CLAUDE.md — ${tokens.__PROJECT_NAME__}
+
+This file provides guidance to Claude Code when working in this monorepo.
+
+## Project Overview
+
+**${tokens.__PROJECT_NAME__}** is a TypeScript monorepo generated with create-monorepo.
+
+Packages:
+${hasBackend ? `- \`packages/api/\` — Hono backend API (port ${tokens.__API_PORT__})\n` : ''}${hasFrontend ? `- \`packages/web/\` — Next.js frontend (port ${tokens.__WEB_PORT__})\n` : ''}${hasShared ? `- \`packages/shared/\` — Shared Zod schemas and TypeScript types\n` : ''}
+## Stack
+
+${hasBackend ? `- **Backend**: Hono, TypeScript, Zod${db ? `, Prisma (${db})` : ''}${hasAuth ? ', better-auth' : ''}${hasRedis ? ', Redis' : ''}\n` : ''}${hasFrontend ? `- **Frontend**: Next.js 15 App Router, TanStack Query, Tailwind CSS, shadcn/ui${hasAuth ? ', better-auth client' : ''}\n` : ''}${hasShared ? `- **Shared**: Zod schemas, inferred TypeScript types\n` : ''}- **Package Manager**: ${pm}
+- **Monorepo**: pnpm workspaces
+
+## Development Commands
+
+\`\`\`bash
+# Run everything
+${pm} dev                         # Start all packages in parallel
+
+# Individual packages
+${pm} --filter api dev            # Backend only
+${pm} --filter web dev            # Frontend only
+
+# Build
+${pm} build                       # Build all packages
+${pm} --filter shared build       # Build shared first if types changed
+
+# Quality
+${pm} typecheck                   # Type-check all packages
+${pm} lint                        # Lint all packages
+${pm} format                      # Format all packages
+\`\`\`
+
+## Package Dependency
+
+\`\`\`
+${hasShared ? `packages/shared  ←  packages/api\n                  ←  packages/web` : hasBackend ? 'packages/api' : 'packages/web'}
+\`\`\`
+
+${hasShared ? `> Always build \`packages/shared\` first after schema changes: \`${pm} --filter shared build\`\n` : ''}${db ? `\n## Database\n\n- **Provider**: ${db === 'postgres' ? 'PostgreSQL' : 'MongoDB'} via Prisma\n- Schema: \`packages/api/prisma/schema.prisma\`\n\n\`\`\`bash\n${pm} --filter api prisma:generate   # Regenerate Prisma client\n${pm} --filter api prisma:migrate    # Run migrations\n${pm} --filter api prisma:studio     # Open Prisma Studio\n\`\`\`\n` : ''}${hasAuth ? `\n## Authentication\n\nPowered by [better-auth](https://better-auth.com).\n\n- Sessions stored in database, sent as HTTP-only cookies\n- Auth routes handled at \`/api/auth/**\` on the backend\n- Frontend uses \`lib/auth-client.ts\` — no manual token management\n- Required env vars: \`BETTER_AUTH_SECRET\`, \`BETTER_AUTH_URL\`\n\nSee \`packages/api/CLAUDE.md\` for protecting routes.\nSee \`packages/web/CLAUDE.md\` for frontend usage.\n` : ''}
+## Environment Setup
+
+\`\`\`bash
+cp packages/api/.env.example packages/api/.env
+${hasFrontend ? `cp packages/web/.env.example packages/web/.env\n` : ''}\`\`\`
+
+Edit the \`.env\` files before running \`${pm} dev\`.
+
+## Key Files
+
+${hasBackend ? `- \`packages/api/src/index.ts\` — Hono app entry point\n- \`packages/api/src/lib/errors.ts\` — Custom error classes\n- \`packages/api/src/lib/response.ts\` — Response helpers\n` : ''}${hasFrontend ? `- \`packages/web/services/api/client.ts\` — HTTP client\n- \`packages/web/services/api/endpoints.ts\` — API endpoint constants\n- \`packages/web/lib/auth-client.ts\` — better-auth client\n` : ''}${hasShared ? `- \`packages/shared/src/index.ts\` — All shared type exports\n` : ''}
+## Per-Package Guidance
+
+Each package has its own \`CLAUDE.md\` with detailed patterns:
+${hasBackend ? `- \`packages/api/CLAUDE.md\` — routes, services, middleware, error handling\n` : ''}${hasFrontend ? `- \`packages/web/CLAUDE.md\` — services, hooks, auth, components\n` : ''}${hasShared ? `- \`packages/shared/CLAUDE.md\` — adding schemas and types\n` : ''}`;
+
+    await writeFile(path.join(this.options.projectDir, 'CLAUDE.md'), claudeMdContent);
+
+    // Create README.md
     const readmeContent = `# ${tokens.__PROJECT_NAME__}
 
 Generated with create-monorepo.

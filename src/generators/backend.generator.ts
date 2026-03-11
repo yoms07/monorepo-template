@@ -28,6 +28,9 @@ export class BackendGenerator extends BaseGenerator {
     const tokens = this.getTokens({
       __BACKEND_FRAMEWORK__: this.config.framework,
       __DATABASE_PROVIDER__: this.config.database || 'none',
+      __PRISMA_PROVIDER__: this.config.database === 'postgres' ? 'postgresql'
+        : this.config.database === 'mongodb' ? 'mongodb'
+        : 'postgresql',
       __HAS_REDIS__: String(this.config.includeRedis),
       __HAS_SMTP__: String(this.config.includeSmtp),
     });
@@ -75,9 +78,9 @@ export class BackendGenerator extends BaseGenerator {
         await mergeFeature(backendDir, swaggerFeaturePath, tokens);
       }
 
-      // Add JWT Auth feature
-      if (this.config.includeAuth) {
-        const authFeaturePath = path.join(featuresPath, 'jwt-auth');
+      // Add better-auth feature (requires a database for session storage)
+      if (this.config.includeAuth && this.config.database) {
+        const authFeaturePath = path.join(featuresPath, 'better-auth');
         await mergeFeature(backendDir, authFeaturePath, tokens);
       }
     }

@@ -12,6 +12,7 @@ export abstract class BaseGenerator {
       __PROJECT_NAME__: this.options.projectName,
       __PACKAGE_SCOPE__: `@${this.options.projectName}`,
       __DATABASE_PROVIDER__: 'none',
+      __PRISMA_PROVIDER__: 'postgresql',
       __HAS_REDIS__: 'false',
       __HAS_SMTP__: 'false',
       __API_PORT__: '3001',

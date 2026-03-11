@@ -44,6 +44,7 @@ export interface TemplateTokens {
   __PROJECT_NAME__: string;
   __PACKAGE_SCOPE__: string;
   __DATABASE_PROVIDER__: string;
+  __PRISMA_PROVIDER__: string;
   __HAS_REDIS__: string;
   __HAS_SMTP__: string;
   __API_PORT__: string;

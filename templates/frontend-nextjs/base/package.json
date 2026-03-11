@@ -8,7 +8,7 @@
     "start": "next start -p __WEB_PORT__",
     "typecheck": "tsc --noEmit",
     "lint": "next lint",
-    "format": "prettier --write \"app/**/*.{ts,tsx}\" \"components/**/*.{ts,tsx}\" \"lib/**/*.ts\""
+    "format": "prettier --write \"app/**/*.{ts,tsx}\" \"components/**/*.{ts,tsx}\" \"lib/**/*.ts\" \"services/**/*.ts\" \"providers/**/*.tsx\""
   },
   "dependencies": {
     "next": "^15.1.6",
@@ -17,6 +17,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.6.0",
+    "@tanstack/react-query": "^5.62.11",
+    "@tanstack/react-query-devtools": "^5.62.11",
+    "better-auth": "^1.2.7",
     "__PACKAGE_SCOPE__/shared": "workspace:*"
   },
   "devDependencies": {

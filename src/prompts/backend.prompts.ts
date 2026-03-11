@@ -67,11 +67,11 @@ export async function promptBackendConfig(): Promise<BackendConfig> {
   }
 
   let includeAuth = false;
-  if (backendType === 'web') {
+  if (backendType === 'web' && database !== 'none') {
     const { auth } = await enquirer.prompt<{ auth: boolean }>({
       type: 'confirm',
       name: 'auth',
-      message: 'Include JWT authentication?',
+      message: 'Include authentication? (better-auth — email/password + sessions)',
       initial: false,
     });
     includeAuth = auth;
