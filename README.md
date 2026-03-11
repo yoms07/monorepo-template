@@ -33,8 +33,10 @@ npm create @yoms/monorepo my-project
 
 ## Quick Start
 
+### Interactive Mode (Default)
+
 ```bash
-# Create a new project
+# Create a new project with interactive prompts
 npx @yoms/create-monorepo my-project
 
 # Navigate to project
@@ -51,6 +53,49 @@ pnpm dev
 # - Frontend: http://localhost:3000
 ```
 
+### Non-Interactive Mode with CLI Flags
+
+```bash
+# Create a project with all features using CLI flags
+npx @yoms/create-monorepo my-project \
+  --backend hono \
+  --database postgres \
+  --redis \
+  --smtp \
+  --swagger \
+  --auth \
+  --frontend \
+  --shadcn \
+  --docker \
+  --pm pnpm
+
+# Quick start with defaults (skips all prompts)
+npx @yoms/create-monorepo my-project --yes
+```
+
+## CLI Options
+
+```bash
+npx @yoms/create-monorepo [dir] [options]
+
+Options:
+  --backend <framework>    Backend framework (hono)
+  --database <db>          Database (postgres, mongodb, none)
+  --redis                  Include Redis cache
+  --smtp                   Include SMTP email
+  --swagger                Include Swagger docs
+  --auth                   Include JWT authentication
+  --frontend               Include Next.js frontend
+  --shadcn                 Include shadcn/ui components
+  --pm <manager>           Package manager (pnpm, npm, yarn, bun)
+  --docker                 Include Docker Compose setup
+  --skip-install           Skip dependency installation
+  --skip-git               Skip git initialization
+  -y, --yes                Skip all prompts and use defaults
+  -h, --help               Display help
+  -v, --version            Display version
+```
+
 ## What You Get
 
 ### Backend Options
@@ -60,8 +105,12 @@ pnpm dev
 - **Caching**: Redis with ready-to-use cache service
 - **Email**: SMTP with Nodemailer
 - **Docs**: Swagger/OpenAPI with Scalar UI
+- **Authentication**: JWT with refresh tokens (optional)
 - **Logging**: Winston with structured logging
 - **Validation**: Zod schemas
+- **Error Handling**: Custom error classes and response helpers
+- **Rate Limiting**: Memory-based rate limiter with presets
+- **Testing**: Vitest with example tests
 - **Type Safety**: Full TypeScript with strict mode
 
 ### Frontend
@@ -85,12 +134,14 @@ my-project/
 │   ├── api/                  # Backend API
 │   │   ├── src/
 │   │   │   ├── routes/       # API routes
-│   │   │   ├── middleware/   # Express/Hono middleware
+│   │   │   ├── middleware/   # Hono middleware
 │   │   │   ├── services/     # Business logic
 │   │   │   ├── config/       # Configuration (env, logger, db)
+│   │   │   ├── lib/          # Utilities (jwt, errors, response)
 │   │   │   └── types/        # TypeScript types
-│   │   ├── prisma/           # Database schema
-│   │   └── Dockerfile        # Production container
+│   │   ├── prisma/           # Database schema (if database selected)
+│   │   ├── Dockerfile        # Production container
+│   │   └── vitest.config.ts  # Test configuration
 │   │
 │   ├── web/                  # Next.js frontend
 │   │   ├── app/              # App router pages
@@ -102,6 +153,7 @@ my-project/
 │           ├── schemas/      # Zod schemas
 │           └── types.ts      # Common types
 │
+├── docker-compose.yml        # Docker services (if --docker)
 ├── pnpm-workspace.yaml       # Workspace configuration
 └── tsconfig.base.json        # Shared TypeScript config
 ```
@@ -157,6 +209,35 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=...
 SMTP_PASS=...
+
+# JWT (if --auth selected)
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
+JWT_REFRESH_EXPIRES_IN=7d
+```
+
+## Docker Compose
+
+When using the `--docker` flag, a `docker-compose.yml` file is generated with the following services based on your configuration:
+
+- **PostgreSQL**: If `--database postgres` is selected
+- **MongoDB**: If `--database mongodb` is selected
+- **Redis**: If `--redis` is selected
+- **MailHog**: If `--smtp` is selected (SMTP testing server with web UI)
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# View MailHog web UI (if SMTP selected)
+open http://localhost:8025
 ```
 
 ## Available Scripts
@@ -165,10 +246,15 @@ SMTP_PASS=...
 # Development
 pnpm dev              # Start all packages in dev mode
 pnpm --filter api dev # Start only backend
+pnpm --filter web dev # Start only frontend
 
 # Building
 pnpm build            # Build all packages
 pnpm typecheck        # Type-check all packages
+
+# Testing
+pnpm --filter api test        # Run backend tests
+pnpm --filter api test:watch  # Run tests in watch mode
 
 # Database (if Prisma is selected)
 pnpm --filter api prisma:generate  # Generate Prisma client
@@ -178,6 +264,48 @@ pnpm --filter api prisma:studio    # Open Prisma Studio
 # Code quality
 pnpm lint             # Lint all packages
 pnpm format           # Format with Prettier
+```
+
+## Authentication (JWT)
+
+When using the `--auth` flag, JWT authentication is set up with the following features:
+
+- **Access tokens**: Short-lived (15 minutes default)
+- **Refresh tokens**: Long-lived (7 days default)
+- **Password hashing**: bcryptjs with salt rounds
+- **Protected routes**: Auth middleware for route protection
+
+### Example Usage
+
+```typescript
+// Register a new user
+POST /auth/register
+{
+  "email": "user@example.com",
+  "password": "securepassword",
+  "name": "John Doe"
+}
+
+// Login
+POST /auth/login
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+
+// Refresh access token
+POST /auth/refresh
+{
+  "refreshToken": "..."
+}
+
+// Protected route example
+import { authMiddleware } from './middleware/auth.middleware';
+
+app.get('/protected', authMiddleware, (c) => {
+  const { userId, email } = c.get('jwtPayload');
+  return c.json({ userId, email });
+});
 ```
 
 ## Requirements
